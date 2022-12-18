@@ -1,0 +1,28 @@
+version: '3.1'
+
+services:
+
+  database:
+    image: postgres:15-alpine
+    volumes:
+      - postgresdata:/var/lib/postgresql/data
+      - ./dbseed:/docker-entrypoint-initdb.d
+    networks:
+      - dbnet
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=meterpost
+      - POSTGRES_PASSWORD=meterpost
+
+  adminer:
+    image: adminer
+    networks:
+      - dbnet
+    ports:
+      - "15432:8080"
+
+volumes:
+  postgresdata:
+networks:
+  dbnet:
