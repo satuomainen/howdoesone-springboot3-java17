@@ -36,3 +36,10 @@ Please see the [migrating instructions](./migrations/README.md).
 ## Seeding the development database with initial data
 
 Please see the [dbseed instructions](./dbseed/README.md).
+
+## Integration test database
+
+The integration database image is used by TestContainers to provide a live
+database with the same content as the development database.
+
+Please see the [integration database image instructions](./integration-test/README.md).

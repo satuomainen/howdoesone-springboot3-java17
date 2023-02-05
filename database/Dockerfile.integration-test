@@ -1,0 +1,41 @@
+FROM postgres:15-alpine AS build
+
+# Install stuff needed to get and run Liquibase
+RUN mkdir -p /usr/share/man/man1 \
+    && apk add --update wget openjdk17 \
+    && rm -rf /var/cache/apk/*
+
+ENV LB_VERSION=4.19.0
+ENV LB_ROOT=/liquibase-${LB_VERSION}
+
+# Get Liquibase & JDBC Driver for PostgreSQL
+RUN mkdir -p ${LB_ROOT}/changelog/changesets \
+    && cd ${LB_ROOT} \
+    && wget -q https://github.com/liquibase/liquibase/releases/download/v${LB_VERSION}/liquibase-${LB_VERSION}.tar.gz \
+    && wget -q https://jdbc.postgresql.org/download/postgresql-42.5.3.jar \
+    && tar xzf liquibase-${LB_VERSION}.tar.gz
+
+RUN chmod a+x ${LB_ROOT}/liquibase
+
+COPY --chown=postgres:postgres ./migrations/liquibase.properties ${LB_ROOT}/
+COPY --chown=postgres:postgres ./migrations/changelog/ ${LB_ROOT}/changelog/
+RUN chmod -R a+wr ${LB_ROOT}/changelog
+
+ENV POSTGRES_USER=meterpost
+ENV POSTGRES_PASSWORD=meterpost
+
+COPY --chown=postgres:postgres ./integration-test/run-migrations.sh /run-migrations.sh
+RUN chmod a+x /run-migrations.sh
+RUN ["sh", "-c", "/run-migrations.sh ${POSTGRES_USER} ${POSTGRES_PASSWORD} ${LB_ROOT}" ]
+
+FROM postgres:15-alpine
+
+ENV POSTGRES_USER=meterpost
+ENV POSTGRES_PASSWORD=meterpost
+
+COPY --from=build --chown=postgres:postgres /000_initial_database.sql /docker-entrypoint-initdb.d/
+COPY --chown=postgres:postgres ./dbseed/database-seed.sql /docker-entrypoint-initdb.d/001_database_seed.sql
+
+EXPOSE 5432
+
+CMD [ "postgres" ]
