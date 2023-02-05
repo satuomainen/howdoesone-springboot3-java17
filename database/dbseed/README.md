@@ -1,8 +1,7 @@
 # Database seed data
 
-Files in this directory matching `*.sql`, `*.sql.gz`, or `*.sh` are run when
-the DB container starts for the first time. Such files can be used to create
-the initial database content.
+The content in this directory is used to create initial database content for
+development and testing use.
 
 ## Warnings
 
@@ -11,26 +10,25 @@ in some random GitHub repository.
 
 ## Usage
 
-### To start the database
+### To seed the development database
+
+In the `database` directory, the development database should be started like
+this:
 
 ```bash
 docker-compose up -d
 ```
 
-### To stop the database
-
-This will only stop the DB and the next time it starts the data will be the
-same as before.
+If the database has not been created with the migrations yet, the migrations
+should be run like this:
 
 ```bash
-docker-compose stop
+docker-compose up --build --scale migrate-database=1 migrate-database
 ```
 
-### To delete the old DB and contents
-
-This will stop the database and delete the volume where the files containing
-the database content are stored.
+After that, the development database is up and running and contains the latest
+structure. Now the initial data can be planted there
 
 ```bash
-docker-compose down -v
+docker-compose up --build --scale seed-database=1 seed-database
 ```

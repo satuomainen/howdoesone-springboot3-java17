@@ -2,11 +2,11 @@ version: '3.1'
 
 services:
 
+  # Development database
   database:
     image: postgres:15-alpine
     volumes:
       - postgresdata:/var/lib/postgresql/data
-      - ./dbseed:/docker-entrypoint-initdb.d
     networks:
       - dbnet
     ports:
@@ -15,12 +15,36 @@ services:
       - POSTGRES_USER=meterpost
       - POSTGRES_PASSWORD=meterpost
 
-  adminer:
-    image: adminer
+  # Run migrations to the development database. Normally the migration does not start.
+  # To run the migrations, say
+  #   docker-compose up --build --scale migrate-database=1 migrate-database
+  migrate-database:
+    image: meterpostmigrate
+    build:
+      context: .
+      dockerfile: migrations/Dockerfile
+    deploy:
+      mode: replicated
+      replicas: 0
     networks:
       - dbnet
-    ports:
-      - "15432:8080"
+    depends_on:
+      - database
+
+  # Seed the development database. Normally seeding does not start; to seed to DB say
+  #   docker-compose up --build --scale seed-database=1 seed-database
+  seed-database:
+    image: meterpostseed
+    build:
+      context: .
+      dockerfile: dbseed/Dockerfile
+    deploy:
+      mode: replicated
+      replicas: 0
+    networks:
+      - dbnet
+    depends_on:
+      - database
 
 volumes:
   postgresdata:

@@ -1,0 +1,181 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet author="satuomainen" id="001-initial-dataseries">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="dataseries"/>
+            </not>
+        </preConditions>
+        <createTable tableName="dataseries">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="dataseries_pkey"/>
+            </column>
+            <column defaultValueComputed="CURRENT_TIMESTAMP" name="created_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueComputed="CURRENT_TIMESTAMP" name="updated_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column defaultValue="NULL::character varying" name="label" type="VARCHAR(255)"/>
+            <column name="api_key" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="satuomainen" id="001-initial-dataseries-id-sequence">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <sequenceExists sequenceName="seq_dataseries__id"/>
+            </not>
+        </preConditions>
+        <createSequence cacheSize="1"
+                        cycle="false"
+                        dataType="bigint"
+                        incrementBy="1"
+                        maxValue="9223372036854775807"
+                        minValue="1"
+                        sequenceName="seq_dataseries__id"
+                        startValue="1"/>
+    </changeSet>
+
+    <changeSet author="satuomainen" id="001-initial-dataseries-summaries">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="dataseries_summaries"/>
+            </not>
+        </preConditions>
+        <createTable tableName="dataseries_summaries">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="dataseries_summaries_pkey"/>
+            </column>
+            <column defaultValueComputed="CURRENT_TIMESTAMP" name="created_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueComputed="CURRENT_TIMESTAMP" name="updated_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="current_value" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="min_value" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="max_value" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="dataseries_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="satuomainen" id="001-initial-dataseries-summaries-id-sequence">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <sequenceExists sequenceName="seq_dataseries_summaries__id"/>
+            </not>
+        </preConditions>
+        <createSequence cacheSize="1"
+                        cycle="false"
+                        dataType="bigint"
+                        incrementBy="1"
+                        maxValue="9223372036854775807"
+                        minValue="1"
+                        sequenceName="seq_dataseries_summaries__id"
+                        startValue="1"/>
+    </changeSet>
+
+    <changeSet author="satuomainen" id="001-initial-readings">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="readings"/>
+            </not>
+        </preConditions>
+        <createTable tableName="readings">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="readings_pkey"/>
+            </column>
+            <column defaultValueComputed="CURRENT_TIMESTAMP" name="created_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueComputed="CURRENT_TIMESTAMP" name="updated_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="value" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="dataseries_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="satuomainen" id="001-initial-readings-id-sequence">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <sequenceExists sequenceName="seq_readings__id"/>
+            </not>
+        </preConditions>
+        <createSequence cacheSize="1"
+                        cycle="false"
+                        dataType="bigint"
+                        incrementBy="1"
+                        maxValue="9223372036854775807"
+                        minValue="1"
+                        sequenceName="seq_readings__id"
+                        startValue="1"/>
+    </changeSet>
+
+    <changeSet author="satuomainen" id="001-initial-dataseries-unique-key">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <uniqueConstraintExists constraintName="uk_dataseries_summaries__dataseries_id"
+                                        tableName="dataseries_summaries"/>
+            </not>
+        </preConditions>
+        <addUniqueConstraint columnNames="dataseries_id"
+                             constraintName="uk_dataseries_summaries__dataseries_id"
+                             tableName="dataseries_summaries"/>
+    </changeSet>
+
+    <changeSet author="satuomainen" id="001-initial-readings-unique-key">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="idx_readings_dataseries__created_at"
+                             tableName="readings"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="idx_readings_dataseries__created_at" tableName="readings">
+            <column name="dataseries_id"/>
+            <column descending="true" name="created_at"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="satuomainen" id="001-initial-dataseries-summaries-foreign-key">
+
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <foreignKeyConstraintExists foreignKeyName="dataseries_summaries_dataseries_id_fkey"/>
+            </not>
+        </preConditions>
+        <addForeignKeyConstraint baseColumnNames="dataseries_id"
+                                 baseTableName="dataseries_summaries"
+                                 constraintName="dataseries_summaries_dataseries_id_fkey"
+                                 deferrable="false"
+                                 initiallyDeferred="false"
+                                 onDelete="NO ACTION"
+                                 onUpdate="NO ACTION"
+                                 referencedColumnNames="id"
+                                 referencedTableName="dataseries"
+                                 validate="true"/>
+    </changeSet>
+</databaseChangeLog>
